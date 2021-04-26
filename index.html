@@ -93,9 +93,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             <div id="date"></div>
 
-            <!--<span style="color:#337ab7;">CORONA - we're all gonna die</span>-->
+            <!--<span style="color:#337ab7;">CORONA - we're all gonna die</span>
 
-            <div>Testing: <span id="testing"></span></div>
+            <div>Testing: <span id="testing"></span></div>-->
 
         </div>
 
@@ -116,11 +116,11 @@ function getNextGame(d){
   $.get('https://www.cbssports.com/mlb/teams/MIL/milwaukee-brewers/schedule/regular/' , function(response) {
     var str = response;
     for(var i = 0; i < 170; i++){
+      str = str.substr(str.lastIndexOf("TableBaseWrapper"));
       str = str.substr(str.indexOf("TableBase-bodyTr")+3);
       var tempstr = str.substr(0,str.indexOf("TableBase-bodyTr"));
       if(tempstr.indexOf("CellGame-lose") == -1 && tempstr.indexOf("CellGame-win") == -1){
-
-        var homeTeam = tempstr.indexOf("vs") > 0 && tempstr.indexOf("vs") < 700 ? false : true;
+        var homeTeam = tempstr.indexOf("vs") > 0 /*&& tempstr.indexOf("vs") < 700*/ ? false : true;
 
         var gameDate = tempstr.substr(tempstr.indexOf("CellGameDate"));
         gameDate = gameDate.substr(14,gameDate.indexOf("<")-14).trim();
@@ -129,8 +129,9 @@ function getNextGame(d){
             //getting player - home
             tempstr = tempstr.substr(tempstr.indexOf("CellPlayerName--short")+10);
             tempstr = tempstr.substr(tempstr.indexOf("class=")+9);
+            tempstr = tempstr.substr(tempstr.indexOf("class=")+9);
             tempstr = tempstr.substr(0,tempstr.indexOf("</a>"));
-            $("#testing").html(" -- home game upcoming --");
+            //$("#testing").html(" -- home game upcoming (not good) --");
         }
         else{
             //getting player - away
@@ -139,7 +140,7 @@ function getNextGame(d){
             tempstr = tempstr.substr(tempstr.indexOf("class=")+9);
             tempstr = tempstr.substr(tempstr.indexOf("class=")+9);
             tempstr = tempstr.substr(0,tempstr.indexOf("</a>"));
-            $("#testing").html(" -- away game upcoming --");
+            //$("#testing").html(" -- away game upcoming (good) --");
         }
 
         $("#date").html(gameDate);
@@ -194,32 +195,35 @@ function getGame(){
 
         //get pitcher
         for(var i = 0; i < 4; i++){
-        	var a = strLive.indexOf("<th colspan=\"1\" class=\"gametracker-table__th\">PITCHERS</th>");
+        	var a = strLive.indexOf("<th class=\"gametracker-table__th\" colspan=\"1\">PITCHERS</th>");
         	strLive = strLive.substr(a+1);
-        	tempstrLive = strLive.substr(0,2500);
+        	tempstrLive = strLive.substr(0,3000);
         	//console.log("************************");
         	//console.log(tempstr.substr(tempstr.lastIndexOf"player_name"));
 
           //For away team, last instance of player_name in the 1st instance is the current pitcher
           if(!homeTeam && i == 1){
-            tempstrLive = tempstrLive.substr(0,tempstrLive.lastIndexOf("class=\"gametracker-table__th\">PITCHERS</th>"));
+            tempstrLive = tempstrLive.substr(0,tempstrLive.lastIndexOf(">PITCHERS</th>")); // this was a problem in the 9th inning with 5 pitchers; changed line 199 from 2500 to 3000 to try to fix
             tempstrLive = tempstrLive.substr(tempstrLive.lastIndexOf("player_name"));
-            playerName = tempstrLive.substr(12, tempstrLive.indexOf("\"")-12);
+            //playerName = tempstrLive.substr(12, tempstrLive.indexOf("\"")-12); //This will give full name
+            playerName = tempstrLive.substr(tempstrLive.indexOf("\">")+2, tempstrLive.indexOf("</a>")-(tempstrLive.indexOf("\">")+2));
 
             $("#pitcher2").html(playerName);
             i = 4;
+            //$("#testing").html(" -- live game AWAY (good) --");
           }
           //For home team, last instance of player_name in the 3rd instance is the current pitcher
           else if(homeTeam && i == 3){
             tempstrLive = tempstrLive.substr(tempstrLive.lastIndexOf("player_name"));
-            playerName = tempstrLive.substr(12, tempstrLive.indexOf("\"")-12);
+            //playerName = tempstrLive.substr(12, tempstrLive.indexOf("\"")-12); //This will give full name
+            playerName = tempstrLive.substr(tempstrLive.indexOf("\">")+2, tempstrLive.indexOf("</a>")-(tempstrLive.indexOf("\">")+2));
 
             $("#pitcher2").html(playerName);
+            //$("#testing").html(" -- live game HOME (almost good) --");
           }
         }
 
       });
-      $("#testing").html(" -- live game --");
     }
     else{
 
